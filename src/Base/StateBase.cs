@@ -45,6 +45,10 @@ namespace FSM
 		public virtual void OnLogic() {
 
 		}
+		
+		public virtual bool TryInterrupt() {
+			return true;
+		}
 
 		/// <summary>
 		/// Called when the state machine transitions from this state to another state (exits this state)

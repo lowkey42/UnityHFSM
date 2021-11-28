@@ -176,20 +176,22 @@ namespace FSM
 		/// therefore forcing an immediate state change</param>
 		public void RequestStateChange(TStateId name, bool forceInstantly = false)
 		{
-			if (!activeState.needsExitTime || forceInstantly)
+			if(forceInstantly)
 			{
-				ChangeState(name);
+				if(!activeState.needsExitTime || activeState.TryInterrupt())
+				{
+					ChangeState(name);
+					return;
+				}
 			}
-			else
-			{
-				pendingState = (name, true);
-				activeState.RequestExit();
-				/**
-				 * If it can exit, the activeState would call
-				 * -> state.fsm.StateCanExit() which in turn would call
-				 * -> fsm.ChangeState(...)
-				 */
-			}
+			
+			pendingState = (name, true);
+			activeState.RequestExit();
+			/**
+			 * If it can exit, the activeState would call
+			 * -> state.fsm.StateCanExit() which in turn would call
+			 * -> fsm.ChangeState(...)
+			 */
 		}
 
 		/// <summary>
@@ -538,6 +540,14 @@ namespace FSM
 			}
 
 			AddState(name, new State<TStateId>(onEnter, onLogic, onExit, canExit, needsExitTime));
+		}
+		
+		public void AddState(
+			TStateId name,
+			Action onLogic,
+			bool needsExitTime = true)
+		{
+			AddState(name, new SimpleState<TStateId>(onLogic, needsExitTime));
 		}
 
 		/// <summary>
